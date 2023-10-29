@@ -5,7 +5,7 @@ Section code.
   Hypothesis U : UU.
   Hypothesis El : U → UU → UU.
   (** [resp] is defined to transport back from the second type of [weq] to the first, 
-      contrary to the definition in the paper, in order to match the types of 
+      as opposed to the definition in the paper, in order to match the types of 
       arguments of [weqtransportbUAH]. This reflects in the types of [isisomorphism] 
       and [equality_pair_lemma], where the positions of respective arguments are 
       consequently also flipped. *)
@@ -43,8 +43,8 @@ Section code.
   Proof.
     intros.
     unfold instance in X.
-    induction X as [C p']. induction p' as [x p].
-    induction Y as [D q']. induction q' as [y q].
+    destruct X as [C p']. destruct p' as [x p].
+    destruct Y as [D q']. destruct q' as [y q].
     apply (weqcomp (weqonpaths (weqtotal2asstol _ (λ x, pr1 (pr2 c (pr1 x) (pr2 x)))) _ _)).
     cbn; unfold weqtotal2asstol, total2asstol; cbn.
     apply (weqcomp (subtypeInjectivity_prop (λ x, pr2 c (pr1 x) (pr2 x)) _ _)).
@@ -59,9 +59,9 @@ Section code.
   Theorem isomorphism_is_equality : ∏ c X Y, isomorphic c X Y ≃ X = Y.
   Proof.
     intros.
-    induction c as [a P].
-    induction X as [C p']. induction p' as [x p].
-    induction Y as [D q']. induction q' as [y q].
+    destruct c as [a P].
+    destruct X as [C p']. destruct p' as [x p].
+    destruct Y as [D q']. destruct q' as [y q].
     unfold isomorphic, isisomorphism.
     assert (Htransport : 
       (∑ eq : C ≃ D, resp a _ _ eq y = x)   ≃
@@ -73,9 +73,9 @@ Section code.
     }
     apply (weqcomp Htransport). clear Htransport.
     assert (Huv : 
-      (∑ eq : C ≃ D, transportb _ (weqtopaths eq) y = x) ≃
-      (∑ eq : C = D, transportb _ eq y = x)).
-    { exact (weqfp (invweq (univalence _ _)) _). }
+        (∑ eq : C ≃ D, transportb _ (weqtopaths eq) y = x) ≃
+        (∑ eq : C = D, transportb _ eq y = x))
+      by exact (weqfp (invweq (univalence _ _)) _).
     apply (weqcomp Huv). clear Huv.
     apply invweq.
     exact (equality_pair_lemma (a ,, P) (C ,, x ,, p) (D ,, y ,, q)).
@@ -86,7 +86,7 @@ End code.
 Section universe.
 
   Inductive U : UU :=
-  | idx    : U
+  | id    : U
   | type   : U
   | k      : UU → U
   | arrow  : U → U → U
@@ -99,7 +99,7 @@ Section universe.
 
   Fixpoint El (u : U) (C : UU) : UU :=
   match u with
-  | idx  => C
+  | id  => C
   | type => UU
   | k a  => a
   | (a ↣ b) => El a C → El b C
@@ -162,29 +162,29 @@ Section universe.
     - apply idpath.
     - apply idpath.
     - apply idpath.
-    - assert (cast_arrow_unfold :
+    - assert (castarrow_unfold :
           cast (a1 ↣ a2) (isrefl_logeq X) 
-        = funiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X))).
-      { apply idpath. }
-      rewrite cast_arrow_unfold, IHa1, IHa2. apply idpath.
-    - assert (cast_otimes_unfold : 
+        = funiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X)))
+      by apply idpath.
+      rewrite castarrow_unfold, IHa1, IHa2. apply idpath.
+    - assert (castotimes_unfold : 
           cast (a1 ⊗ a2) (isrefl_logeq X) 
-        = andiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X))).
-      { apply idpath. }
-      rewrite cast_otimes_unfold, IHa1, IHa2. apply idpath.
-    - assert (cast_oplus_unfold :
+        = andiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X)))
+      by apply idpath.
+      rewrite castotimes_unfold, IHa1, IHa2. apply idpath.
+    - assert (castoplus_unfold :
           cast (a1 ⊕ a2) (isrefl_logeq X) 
-        = oriff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X))).
-      { apply idpath. }
-      rewrite cast_oplus_unfold, IHa1, IHa2.
+        = oriff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X)))
+      by apply idpath.
+      rewrite castoplus_unfold, IHa1, IHa2.
       unfold oriff, make_dirprod, isrefl_logeq. cbn.
       assert (H : coprodf (idfun _) (idfun _) = idfun (El a1 X ⨿ El a2 X)).
       { unfold coprodf. cbn.
         apply funextsec.
         intro.
         induction x.
-        + apply idpath.
-        + apply idpath. 
+        - apply idpath.
+        - apply idpath. 
       }
       apply dirprodeq.
       * exact H.
@@ -194,11 +194,119 @@ Section universe.
   Corollary resp_id {a : U} {B : UU} (x : El a B) : resp (idweq B) x = x.
   Proof.
     unfold resp.
-    assert (idweq_refliff : weq_to_iff (idweq B) = (isrefl_logeq B)).
-    { apply idpath. }
+    assert (idweq_refliff : weq_to_iff (idweq B) = (isrefl_logeq B))
+      by apply idpath.
     rewrite idweq_refliff, cast_refliff.
     cbn.
     apply idpath.
   Defined.
 
 End universe.
+
+Section monoid.
+
+Require Import UniMath.Algebra.All.
+  
+  Notation "a ↣ b" := (arrow a b).
+  Notation "a ⊗ b" := (otimes a b).
+  Notation "a ⊕ b" := (oplus a b).
+
+  Definition Code := code U El.
+  
+  (* monoid signature *)
+  Definition monoidsig := (id ↣ (id ↣ id)) ⊗ id.
+
+  (* monoid properties *)
+  Definition monoidprops {C : UU} (ope : El monoidsig C) : UU :=
+  match ope with (op,, e) => 
+    isaset C × isassoc op × isunit op e
+  end.
+  
+  (* proof that monoid properties are propositional *)
+  Lemma monoidpropsisaprop {C : UU} (ope : El monoidsig C) : isaprop (monoidprops ope).
+  Proof.
+    unfold monoidprops.
+    destruct ope as [op e].
+    cbn in op.
+    intros p q.
+    set (hC  := (C,, pr1 p) : hSet ).
+    set (bop := op : binop hC ).
+    apply isapropdirprod.
+    - exact (isapropisaset _).
+    - apply isapropdirprod.
+      * apply (isapropisassoc bop).
+      * apply isapropdirprod.
+        + apply (isapropislunit bop).
+        + apply (isapropisrunit bop).
+  Defined.
+
+  (* code of monoids as given in the paper *)
+  Definition monoidcode : Code.
+  Proof.
+    apply (tpair _ monoidsig). 
+    intros C ope.
+    apply (tpair _ (monoidprops ope)).
+    apply (monoidpropsisaprop ope).
+  Defined.
+
+  Definition monoidinstance := instance _ _ monoidcode.
+
+  (** translation from monoids as defined in the standard library
+      to monoids defined as instances of [monoidcode] *)
+  Definition toinstance : monoid → monoidinstance.
+  Proof.
+    intro m. unfold monoid, setwithbinop in m.
+    destruct m as [setop props].
+    destruct props as [hassoc unital].
+    destruct unital as [e hisunit].
+    destruct setop as [Cset op].
+    cbn in e.
+    use tpair.
+    - exact Cset. 
+    - cbn. use tpair. 
+      * use make_dirprod.
+        exact op. exact e.
+      * unfold monoidprops. cbn.
+        destruct Cset as [C hset]. 
+        apply (make_dirprod hset).
+        apply (make_dirprod hassoc).
+        exact hisunit.
+  Defined.
+  
+  (** translation from monoids defined as instances of [monoidcode] to 
+      monoids as defined in the standard library *)
+  Definition frominstance : monoidinstance → monoid.
+  Proof.
+    intro ms. unfold monoidinstance, instance, monoidcode, pr1 in ms.
+    destruct ms as [C structure].
+    destruct structure as [sig props].
+    destruct sig as [op e]. cbn in op, e.
+    destruct props as [hset props].
+    destruct props as [hassoc hunit].
+    use tpair.
+    - exact ((C ,, hset),, op).
+    - cbn. unfold ismonoidop.
+      apply (make_dirprod hassoc).
+      exact (e,, hunit).
+  Defined.
+
+  (** weak equality between the monoids of the standard 
+      library and instances of [monoidcode] *)
+  Theorem weqmonoids : monoidinstance ≃ monoid.
+  Proof.
+    use weq_iso.
+    - exact frominstance.
+    - exact toinstance.
+    - intro m.
+      exact (idpath _).
+    - intro m.
+      exact (idpath _).
+  Defined.
+
+  (** consequent equality between the types *)
+  Corollary eqmonoids : monoidinstance = monoid.
+  Proof.
+    apply univalence. exact weqmonoids.
+  Defined.
+
+End monoid.
