@@ -254,6 +254,9 @@ Require Import UniMath.Algebra.All.
   (* type of monoids encoded as an [instance] of [monoidcode] *)
   Definition monoidinstance := instance _ _ monoidcode.
 
+  (* monoid isomorphism *)
+  Definition monoidiso := isomorphic U El (@resp) monoidcode.
+
   (** translation from monoids as defined in the standard library
       to monoids defined as instances of [monoidcode] *)
   Definition toinstance : monoid → monoidinstance.
@@ -291,6 +294,11 @@ Require Import UniMath.Algebra.All.
     - cbn. unfold ismonoidop.
       apply (make_dirprod hassoc).
       exact (e,, hunit).
+  Defined.
+
+  Theorem monoid_isoiseq : ∏ (X Y : monoidinstance), monoidiso X Y ≃ (X = Y). 
+  Proof.
+    exact (isomorphism_is_equality U El (@resp) (@resp_id) monoidcode). 
   Defined.
 
   (** weak equality between the monoids of the standard 
