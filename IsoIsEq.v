@@ -44,10 +44,10 @@ Section code.
     intros.
     unfold instance in X.
     destruct X as [C p']. destruct p' as [x p].
-    destruct Y as [D q']. destruct q' as [y q].
+    destruct Y as [D q']. destruct q' as [y q]. cbn.
     apply (weqcomp (weqonpaths (weqtotal2asstol _ (λ x, pr1 (pr2 c (pr1 x) (pr2 x)))) _ _)).
-    cbn; unfold weqtotal2asstol, total2asstol; cbn.
-    apply (weqcomp (subtypeInjectivity_prop (λ x, pr2 c (pr1 x) (pr2 x)) _ _)).
+    cbn. unfold total2asstol. cbn.
+    apply (weqcomp (subtypeInjectivity_prop (λ x, pr2 c (pr1 x) (pr2 x)) _ _)). cbn.
     apply (weqcomp (total2_paths_equiv _ _ _)).
     unfold "╝". cbn.
     apply weqfibtototal.
@@ -56,6 +56,7 @@ Section code.
     apply weqpathsinv0.
   Defined.
 
+  (* the main result of the paper *)
   Theorem isomorphism_is_equality : ∏ c X Y, isomorphic c X Y ≃ X = Y.
   Proof.
     intros.
@@ -73,9 +74,9 @@ Section code.
     }
     apply (weqcomp Htransport). clear Htransport.
     assert (Huv : 
-        (∑ eq : C ≃ D, transportb _ (weqtopaths eq) y = x) ≃
-        (∑ eq : C = D, transportb _ eq y = x))
-      by exact (weqfp (invweq (univalence _ _)) _).
+        (∑ eq : C ≃ D, transportb _ (weqtopaths eq) y = x) 
+      ≃ (∑ eq : C = D, transportb _ eq y = x)
+    ) by exact (weqfp (invweq (univalence _ _)) _).
     apply (weqcomp Huv). clear Huv.
     apply invweq.
     exact (equality_pair_lemma (a ,, P) (C ,, x ,, p) (D ,, y ,, q)).
@@ -136,6 +137,7 @@ Section universe.
     - exact (coprodf (pr2 iffAB) (pr2 iffCD)).
   Defined.
 
+  (* cast is used to define resp as suggested in the paper *)
   Definition cast (a : U) {B C : UU} : B <-> C → El a B <-> El a C.
   Proof.
     intro Hiff.
@@ -164,18 +166,18 @@ Section universe.
     - apply idpath.
     - assert (castarrow_unfold :
           cast (a1 ↣ a2) (isrefl_logeq X) 
-        = funiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X)))
-      by apply idpath.
+        = funiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X))
+      ) by apply idpath.
       rewrite castarrow_unfold, IHa1, IHa2. apply idpath.
     - assert (castotimes_unfold : 
           cast (a1 ⊗ a2) (isrefl_logeq X) 
-        = andiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X)))
-      by apply idpath.
+        = andiff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X))
+      ) by apply idpath.
       rewrite castotimes_unfold, IHa1, IHa2. apply idpath.
     - assert (castoplus_unfold :
           cast (a1 ⊕ a2) (isrefl_logeq X) 
-        = oriff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X)))
-      by apply idpath.
+        = oriff (cast a1 (isrefl_logeq X)) (cast a2 (isrefl_logeq X))
+      ) by apply idpath.
       rewrite castoplus_unfold, IHa1, IHa2.
       unfold oriff, make_dirprod, isrefl_logeq. cbn.
       assert (H : coprodf (idfun _) (idfun _) = idfun (El a1 X ⨿ El a2 X)).
@@ -191,7 +193,7 @@ Section universe.
       * exact H.
   Defined.
 
-  Corollary resp_id {a : U} {B : UU} (x : El a B) : resp (idweq B) x = x.
+  Lemma resp_id {a : U} {B : UU} (x : El a B) : resp (idweq B) x = x.
   Proof.
     unfold resp.
     assert (idweq_refliff : weq_to_iff (idweq B) = (isrefl_logeq B))
@@ -249,6 +251,7 @@ Require Import UniMath.Algebra.All.
     apply (monoidpropsisaprop ope).
   Defined.
 
+  (* type of monoids encoded as an [instance] of [monoidcode] *)
   Definition monoidinstance := instance _ _ monoidcode.
 
   (** translation from monoids as defined in the standard library
@@ -292,7 +295,7 @@ Require Import UniMath.Algebra.All.
 
   (** weak equality between the monoids of the standard 
       library and instances of [monoidcode] *)
-  Theorem weqmonoids : monoidinstance ≃ monoid.
+  Theorem weqmonoid : monoidinstance ≃ monoid.
   Proof.
     use weq_iso.
     - exact frominstance.
@@ -304,9 +307,9 @@ Require Import UniMath.Algebra.All.
   Defined.
 
   (** consequent equality between the types *)
-  Corollary eqmonoids : monoidinstance = monoid.
+  Corollary eqmonoid : monoidinstance = monoid.
   Proof.
-    apply univalence. exact weqmonoids.
+    apply univalence. exact weqmonoid.
   Defined.
 
 End monoid.
