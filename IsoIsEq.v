@@ -150,10 +150,10 @@ Section universe.
     - exact (oriff Hb Hc).
   Defined.
 
-  Definition resp {a : U} {B C : UU} : B ≃ C → El a B → El a C.
+  Definition resp {a : U} {B C : UU} : B ≃ C → El a C → El a B.
   Proof.
     intros w ElaB.
-    apply (pr1 (cast _ (weq_to_iff w))).
+    apply (pr2 (cast _ (weq_to_iff w))).
     assumption.
   Defined.
 
